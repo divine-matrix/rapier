@@ -1,0 +1,11 @@
+{
+  "name": "rapier",
+  "version": "0.1.0",
+  "dependencies": [
+    "sdl3",
+    {
+      "name": "imgui",
+      "features": ["sdl3-binding", "opengl3-binding"]
+    }
+  ]
+}

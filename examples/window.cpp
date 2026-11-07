@@ -1,12 +1,13 @@
 #include "sabre/core/window.h"
+#include "sabre/core/core.h"
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_init.h>
 #include <iostream>
 
 int main() {
-  if (!SDL_Init(SDL_INIT_VIDEO)) {
-    std::cerr << "SDL_Init failed: " << SDL_GetError() << "\n";
-    return 1;
-  }
+  sabre::core::sabre_GlobalContext gctx;
+  gctx.sdl_flags = SDL_INIT_VIDEO;
+  sabre::core::sabre_Init(gctx);
 
   sabre::core::WindowSystemData winsys;
   sabre::core::sabre_CreateWindow(winsys, "Example Window", 800, 600, 0);
@@ -29,5 +30,5 @@ int main() {
   }
 
   sabre::core::sabre_DestroyWindow(winsys, 0);
-  SDL_Quit();
+  sabre::core::sabre_Quit();
 }

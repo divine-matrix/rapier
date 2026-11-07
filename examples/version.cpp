@@ -1,7 +1,7 @@
-#include "rapier/rapier.h"
+#include "sabre/sabre.h"
 #include <iostream>
 
 int main() {
-  std::cout << "Rapier Version: " << rapier::version() << std::endl;
+  std::cout << "Sabre Version: " << sabre::version() << std::endl;
   return 0;
 }

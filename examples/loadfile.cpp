@@ -2,9 +2,9 @@
 #include <iostream>
 
 int main() {
-  std::cout << sabre::core::sabre_LoadFile(
-                   "/Users/blockgenie/Documents/_divinematrix/rapier/examples/"
-                   "example.txt")
-            << std::endl;
+  sabre::core::sabre_GlobalContext gctx;
+  gctx.project_dir = "/Users/blockgenie/Documents/_divinematrix/rapier/"
+                     "examples/";
+  std::cout << sabre::core::sabre_LoadFile(gctx, "example.txt") << std::endl;
   return 0;
 }

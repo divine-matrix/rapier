@@ -1,3 +1,4 @@
+#include <OpenGL/gl3.h>
 #include <string>
 
 namespace sabre::core {
@@ -15,6 +16,6 @@ struct sabre_PackagedShader {
   sabre_FragmentShader fragmentShader;
 };
 
-std::string sabre_LoadShader(const std::string &path);
+GLuint sabre_LoadShader(const std::string &path);
 
 } // namespace sabre::core

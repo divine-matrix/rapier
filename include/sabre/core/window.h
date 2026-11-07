@@ -6,7 +6,7 @@ using WindowID = uint32_t;
 #include <SDL3/SDL.h> // Or <SDL2/SDL.h>
 #include <cstdint>
 
-namespace rapier::core {
+namespace sabre::core {
 
 struct Window {
   // Platform Identifiers
@@ -29,13 +29,12 @@ struct Window {
 struct WindowSystemData {
   std::vector<Window> window_pool;
 
-  uint32_t Rapier_GetWindowIndexBySdlId(WindowID id);
+  uint32_t sabre_GetWindowIndexBySdlId(WindowID id);
 };
 
-void Rapier_CreateWindow(WindowSystemData &window_system, const char title[64],
-                         uint32_t width, uint32_t height,
-                         uint64_t custom_flags);
+void sabre_CreateWindow(WindowSystemData &window_system, const char title[64],
+                        uint32_t width, uint32_t height, uint64_t custom_flags);
 
-void Rapier_DestroyWindow(WindowSystemData &window_system, WindowID win_id);
+void sabre_DestroyWindow(WindowSystemData &window_system, WindowID win_id);
 
-} // namespace rapier::core
+} // namespace sabre::core

@@ -1,5 +1,5 @@
 #pragma once
 
-namespace rapier {
+namespace sabre {
 const char *version();
 }

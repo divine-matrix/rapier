@@ -1,3 +1,3 @@
-target_sources(rapier PRIVATE
+target_sources(sabre PRIVATE
 
 )

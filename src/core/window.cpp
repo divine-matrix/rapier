@@ -1,11 +1,11 @@
-#include "rapier/core/window.h"
+#include "sabre/core/window.h"
 #include <SDL3/SDL_video.h>
 #include <cstddef>
 #include <cstdint>
 
-namespace rapier::core {
+namespace sabre::core {
 
-uint32_t WindowSystemData::Rapier_GetWindowIndexBySdlId(uint32_t sdl_id) {
+uint32_t WindowSystemData::sabre_GetWindowIndexBySdlId(uint32_t sdl_id) {
   for (size_t i = 0; i < window_pool.size(); ++i) {
     if (sdl_id == window_pool[i].sdl_id) {
       return i;
@@ -14,9 +14,9 @@ uint32_t WindowSystemData::Rapier_GetWindowIndexBySdlId(uint32_t sdl_id) {
   return -1;
 }
 
-void Rapier_CreateWindow(WindowSystemData &window_system, const char title[64],
-                         uint32_t a_width, uint32_t a_height,
-                         uint64_t custom_flags) {
+void sabre_CreateWindow(WindowSystemData &window_system, const char title[64],
+                        uint32_t a_width, uint32_t a_height,
+                        uint64_t custom_flags) {
   Window win;
 
   win.width = a_width;
@@ -34,7 +34,7 @@ void Rapier_CreateWindow(WindowSystemData &window_system, const char title[64],
   }
 }
 
-void Rapier_DestroyWindow(WindowSystemData &window_system, WindowID win_idx) {
+void sabre_DestroyWindow(WindowSystemData &window_system, WindowID win_idx) {
   if (win_idx >= window_system.window_pool.size())
     return;
   Window &win = window_system.window_pool[win_idx];
@@ -50,4 +50,4 @@ void Rapier_DestroyWindow(WindowSystemData &window_system, WindowID win_idx) {
   window_system.window_pool.pop_back();
 }
 
-} // namespace rapier::core
+} // namespace sabre::core

@@ -1,4 +1,4 @@
-#include "rapier/core/window.h"
+#include "sabre/core/window.h"
 #include <SDL3/SDL.h>
 #include <iostream>
 
@@ -8,8 +8,8 @@ int main() {
     return 1;
   }
 
-  rapier::core::WindowSystemData winsys;
-  rapier::core::Rapier_CreateWindow(winsys, "Example Window", 800, 600, 0);
+  sabre::core::WindowSystemData winsys;
+  sabre::core::sabre_CreateWindow(winsys, "Example Window", 800, 600, 0);
 
   if (winsys.window_pool.empty() || winsys.window_pool[0].handle == nullptr) {
     std::cerr << "Window creation failed: " << SDL_GetError() << "\n";
@@ -28,6 +28,6 @@ int main() {
     SDL_Delay(10);
   }
 
-  rapier::core::Rapier_DestroyWindow(winsys, 0);
+  sabre::core::sabre_DestroyWindow(winsys, 0);
   SDL_Quit();
 }

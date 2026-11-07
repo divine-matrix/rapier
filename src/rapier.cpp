@@ -1,5 +1,5 @@
-#include "rapier/rapier.h"
+#include "sabre/sabre.h"
 #define SDL_BACKEND
-namespace rapier {
+namespace sabre {
 const char *version() { return "2.1.0"; }
-} // namespace rapier
+} // namespace sabre

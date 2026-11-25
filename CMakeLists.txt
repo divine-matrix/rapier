@@ -9,6 +9,7 @@ find_package(SDL3 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 if(sabre_USE_OPENGL)
   find_package(OpenGL REQUIRED)
+  find_package(GLEW REQUIRED) # FIX: Added GLEW lookup when OpenGL is enabled
 endif()
 
 add_library(sabre)
@@ -23,8 +24,11 @@ target_compile_features(sabre PUBLIC cxx_std_17)
 target_link_libraries(sabre PUBLIC SDL3::SDL3 imgui::imgui)
 
 if(sabre_USE_OPENGL)
-  target_link_libraries(sabre PUBLIC OpenGL::GL)
+  target_link_libraries(sabre PUBLIC OpenGL::GL GLEW::GLEW) # FIX: Linked GLEW::GLEW to sabre
   target_compile_definitions(sabre PUBLIC sabre_HAS_OPENGL)
+  if(APPLE)
+    target_compile_options(sabre PRIVATE -Wno-deprecated-declarations)
+  endif()
 endif()
 
 # ---- build examples ----

@@ -4,9 +4,9 @@
 
 namespace sabre::tools::debug {
 
-void draw(sabre::core::sabre_GlobalContext &gctx,
-          sabre::core::sabre_ProcTextureObject &procTex,
-          const sabre_PerfStats &perfStats, DebugDrawState &drawState) {
+void draw(sabre::core::GlobalContext &gctx,
+          sabre::core::ProcTextureObject &procTex,
+          const PerfStats &perfStats, DebugDrawState &drawState) {
   ImGui::Begin("Sabre Debug");
 
   const double fpsVal =
@@ -48,12 +48,12 @@ void draw(sabre::core::sabre_GlobalContext &gctx,
   if (ImGui::Combo("Filter Mode", &filterIndex, filterOptions,
                    IM_ARRAYSIZE(filterOptions))) {
     procTex.filterMode =
-        static_cast<sabre::core::sabre_TextureFilterMode>(filterIndex);
+        static_cast<sabre::core::TextureFilterMode>(filterIndex);
     if (procTex.glTextureId != 0) {
       GLenum glFilter = GL_NEAREST;
-      if (procTex.filterMode == sabre::core::sabre_TextureFilterMode::LINEAR ||
+      if (procTex.filterMode == sabre::core::TextureFilterMode::LINEAR ||
           procTex.filterMode ==
-              sabre::core::sabre_TextureFilterMode::BILINEAR) {
+              sabre::core::TextureFilterMode::BILINEAR) {
         glFilter = GL_LINEAR;
       }
       glBindTexture(GL_TEXTURE_2D, procTex.glTextureId);

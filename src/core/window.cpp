@@ -5,7 +5,7 @@
 
 namespace sabre::core {
 
-uint32_t WindowSystemData::sabre_GetWindowIndexBySdlId(uint32_t sdl_id) {
+uint32_t WindowSystemData::GetWindowIndexBySdlId(uint32_t sdl_id) {
   for (size_t i = 0; i < window_pool.size(); ++i) {
     if (sdl_id == window_pool[i].sdl_id) {
       return i;
@@ -14,7 +14,7 @@ uint32_t WindowSystemData::sabre_GetWindowIndexBySdlId(uint32_t sdl_id) {
   return -1;
 }
 
-void sabre_CreateWindow(WindowSystemData &window_system, const char title[64],
+void CreateWindow(WindowSystemData &window_system, const char title[64],
                         uint32_t a_width, uint32_t a_height,
                         uint64_t custom_flags) {
   Window win;
@@ -34,7 +34,7 @@ void sabre_CreateWindow(WindowSystemData &window_system, const char title[64],
   }
 }
 
-void sabre_DestroyWindow(WindowSystemData &window_system, WindowID win_idx) {
+void DestroyWindow(WindowSystemData &window_system, WindowID win_idx) {
   if (win_idx >= window_system.window_pool.size())
     return;
   Window &win = window_system.window_pool[win_idx];

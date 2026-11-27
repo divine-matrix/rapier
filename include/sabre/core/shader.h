@@ -3,19 +3,19 @@
 
 namespace sabre::core {
 
-struct sabre_VertexShader {
+struct VertexShader {
   std::string *content;
 };
 
-struct sabre_FragmentShader {
+struct FragmentShader {
   std::string *content;
 };
 
-struct sabre_PackagedShader {
-  sabre_VertexShader vertexShader;
-  sabre_FragmentShader fragmentShader;
+struct PackagedShader {
+  VertexShader vertexShader;
+  FragmentShader fragmentShader;
 };
 
-GLuint sabre_LoadShader(const std::string &path);
+GLuint LoadShader(const std::string &path);
 
 } // namespace sabre::core

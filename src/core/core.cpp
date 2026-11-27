@@ -7,7 +7,7 @@
 
 namespace sabre::core {
 
-std::string sabre_LoadFile(sabre_GlobalContext gctx, const std::string &path) {
+std::string LoadFile(GlobalContext gctx, const std::string &path) {
   std::filesystem::path p(gctx.project_dir + path);
   auto size = std::filesystem::file_size(p);
   std::string content(size, '\0');
@@ -16,10 +16,10 @@ std::string sabre_LoadFile(sabre_GlobalContext gctx, const std::string &path) {
   return content;
 }
 
-bool sabre_Init(sabre_GlobalContext &gctx) {
+bool Init(GlobalContext &gctx) {
   if (!SDL_Init(gctx.sdl_flags)) {
     std::cout
-        << "[sabre_engine - sabre_init] [error] - Failed to initialise SDL"
+        << "[engine - init] [error] - Failed to initialise SDL"
         << std::endl;
     std::cerr << "Failed to initialise SDL";
     return false;
@@ -27,6 +27,6 @@ bool sabre_Init(sabre_GlobalContext &gctx) {
   return true;
 }
 
-void sabre_Quit() { SDL_Quit(); }
+void Quit() { SDL_Quit(); }
 
 } // namespace sabre::core

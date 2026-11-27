@@ -9,7 +9,7 @@
 
 namespace sabre::tools::debug {
 
-struct sabre_PerfStats {
+struct PerfStats {
   double frameMs = 0.0;
   double cpuGenMs = 0.0;
   double renderTexMs = 0.0;
@@ -20,9 +20,9 @@ struct DebugDrawState {
   bool animatePattern = true;
 };
 
-void draw(sabre::core::sabre_GlobalContext &gctx,
-          sabre::core::sabre_ProcTextureObject &procTex,
-          const sabre_PerfStats &perfStats, DebugDrawState &drawState);
+void draw(sabre::core::GlobalContext &gctx,
+          sabre::core::ProcTextureObject &procTex,
+          const PerfStats &perfStats, DebugDrawState &drawState);
 
 // FIX: Convert SDL performance counter ticks to milliseconds
 inline double ticksToMs(uint64_t startTicks, uint64_t endTicks) {

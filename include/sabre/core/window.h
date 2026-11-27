@@ -29,12 +29,12 @@ struct Window {
 struct WindowSystemData {
   std::vector<Window> window_pool;
 
-  uint32_t sabre_GetWindowIndexBySdlId(WindowID id);
+  uint32_t GetWindowIndexBySdlId(WindowID id);
 };
 
-void sabre_CreateWindow(WindowSystemData &window_system, const char title[64],
+void CreateWindow(WindowSystemData &window_system, const char title[64],
                         uint32_t width, uint32_t height, uint64_t custom_flags);
 
-void sabre_DestroyWindow(WindowSystemData &window_system, WindowID win_id);
+void DestroyWindow(WindowSystemData &window_system, WindowID win_id);
 
 } // namespace sabre::core

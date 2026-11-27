@@ -1,54 +1,69 @@
 #include "sabre/core/texture.h"
+#include <cstdint>
 #include <iostream>
 #include <string>
+#include <vector>
 
+// Main namespace
 namespace sabre::core {
-
+// Private namespace, so no other files can use stuff here
 namespace {
 
 // FIX: Default shader paths resolved relative to gctx.project_dir by
-// sabre_LoadFile
+// LoadFile
 constexpr const char *kDefaultVertShaderPath = "shaders/proc_texture.vert";
 constexpr const char *kDefaultFragShaderPath = "shaders/proc_texture.frag";
 
+// Defines container for shared OpenGL quad renderer objects
 struct CoreQuadRenderer {
   bool initialized = false;
   GLuint shaderProgram = 0;
   GLuint vao = 0;
   GLuint vbo = 0;
+  // -1 is not found
   GLint textureUniformLoc = -1;
 };
 
+// creates core instance of CoreQuadRenderer
 CoreQuadRenderer gQuadRenderer{};
 
-GLenum toGlFilterMode(sabre_TextureFilterMode mode) {
+// Converts sabre TextureFilterMode to glFilterMode
+GLenum toGlFilterMode(TextureFilterMode mode) {
   switch (mode) {
-  case sabre_TextureFilterMode::LINEAR:
-  case sabre_TextureFilterMode::BILINEAR:
+  case TextureFilterMode::LINEAR:
+  case TextureFilterMode::BILINEAR:
     return GL_LINEAR;
-  case sabre_TextureFilterMode::NEAREST:
+  case TextureFilterMode::NEAREST:
   default:
     return GL_NEAREST;
   }
 }
 
-GLuint compileShaderFromFile(const sabre_GlobalContext &gctx, GLenum shaderType,
+// Compiles shader from path
+GLuint compileShaderFromFile(const GlobalContext &gctx, GLenum shaderType,
                              const char *shaderPath) {
-  // FIX: Load shader source using sabre_LoadFile
-  const std::string sourceStr = sabre_LoadFile(gctx, shaderPath);
+  // FIX: Load shader source using LoadFile
+  const std::string sourceStr = LoadFile(gctx, shaderPath);
+  // Checks whether loading returned nothing, and returns error if so
   if (sourceStr.empty()) {
-    std::cerr << "Failed to load shader file via sabre_LoadFile: " << shaderPath
+    std::cerr << "Failed to load shader file via LoadFile: " << shaderPath
               << "\n";
     return 0;
   }
-
+  // Shader source text
   const char *sourcePtr = sourceStr.c_str();
+  // gets shader id for this shader
   const GLuint shaderId = glCreateShader(shaderType);
+  // attaches shader source to above shader id
   glShaderSource(shaderId, 1, &sourcePtr, nullptr);
+  // compiles shader source
   glCompileShader(shaderId);
 
+  // prepare variable for whether it is compiled or not
   GLint compiled = GL_FALSE;
+  // gets if it is compiled and changes variable by reference
   glGetShaderiv(shaderId, GL_COMPILE_STATUS, &compiled);
+  // checks if compiled is true, if it isn't, return error message
   if (compiled == GL_FALSE) {
     GLint logLength = 0;
     glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &logLength);
@@ -56,24 +71,28 @@ GLuint compileShaderFromFile(const sabre_GlobalContext &gctx, GLenum shaderType,
     glGetShaderInfoLog(shaderId, logLength, nullptr, log.data());
     std::cerr << "Shader compile failed (" << shaderPath << "): " << log
               << "\n";
+    // makes the shader object not leak
     glDeleteShader(shaderId);
     return 0;
   }
-
+  // on success, return shader id
   return shaderId;
 }
 
-bool ensureCoreQuadRenderer(const sabre_GlobalContext &gctx) {
+// Initializes the shared quad renderer if it has not yet been initialized
+bool ensureCoreQuadRenderer(const GlobalContext &gctx) {
+  // cancels if it is already initialized
   if (gQuadRenderer.initialized) {
     return true;
   }
 
+  // compiles vertex shader, and fails if compilation fails
   const GLuint vertShader =
       compileShaderFromFile(gctx, GL_VERTEX_SHADER, kDefaultVertShaderPath);
   if (vertShader == 0) {
     return false;
   }
-
+  // compiles fragment shader, fails if compilation fails
   const GLuint fragShader =
       compileShaderFromFile(gctx, GL_FRAGMENT_SHADER, kDefaultFragShaderPath);
   if (fragShader == 0) {
@@ -81,16 +100,23 @@ bool ensureCoreQuadRenderer(const sabre_GlobalContext &gctx) {
     return false;
   }
 
+  // creates program with ID program
   const GLuint program = glCreateProgram();
+  // attaches shaders to program
   glAttachShader(program, vertShader);
   glAttachShader(program, fragShader);
+  // binds attributes?
   glBindAttribLocation(program, 0, "aPos");
   glBindAttribLocation(program, 1, "aTexCoord");
+  // links attached shaders into executable gpu program
   glLinkProgram(program);
 
+  // deletes shaders so they don't leak
   glDeleteShader(vertShader);
   glDeleteShader(fragShader);
 
+  // does same as in ensureCoreQuadRenderer, checks if program linked, if not,
+  // fails
   GLint linked = GL_FALSE;
   glGetProgramiv(program, GL_LINK_STATUS, &linked);
   if (linked == GL_FALSE) {
@@ -99,15 +125,21 @@ bool ensureCoreQuadRenderer(const sabre_GlobalContext &gctx) {
     std::string log(static_cast<size_t>(logLength > 1 ? logLength : 1), '\0');
     glGetProgramInfoLog(program, logLength, nullptr, log.data());
     std::cerr << "Shader link failed: " << log << "\n";
+    // frees failed program object
     glDeleteProgram(program);
+    // quits function
     return false;
   }
 
+  // initializes ids for vao and vbo
   GLuint vao = 0;
   GLuint vbo = 0;
+  // generates vertex array into vao
   glGenVertexArrays(1, &vao);
+  // generates vertex buffer into vbo
   glGenBuffers(1, &vbo);
 
+  // binds vertex array
   glBindVertexArray(vao);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr,
@@ -132,9 +164,8 @@ bool ensureCoreQuadRenderer(const sabre_GlobalContext &gctx) {
   return true;
 }
 
-void initializeTextureObject(sabre_ProcTextureObject &procTex, uint32_t width,
-                             uint32_t height,
-                             sabre_TextureFilterMode filterMode) {
+void initializeTextureObject(TextureRect &procTex, uint32_t width,
+                             uint32_t height, TextureFilterMode filterMode) {
   procTex.width = width;
   procTex.height = height;
   procTex.filterMode = filterMode;
@@ -163,60 +194,78 @@ void initializeTextureObject(sabre_ProcTextureObject &procTex, uint32_t width,
 
 } // namespace
 
-sabre_ProcTextureObject sabre_CreateProcTextureObject(sabre_GlobalContext &gctx,
-                                                      uint32_t width,
-                                                      uint32_t height) {
-  sabre_ProcTextureObject procTex;
+TextureRect CreateTextureRect(GlobalContext &gctx, TextureRectSystem &sys,
+                              uint32_t width, uint32_t height) {
+  // Initializes procTex
+  TextureRect procTex;
   initializeTextureObject(procTex, width, height, gctx.defaultFilterMode);
+  // Adds procTex's data to TextureRectSystem
+  sys.destwidth.push_back(procTex.renderRect.width);
+  sys.destheight.push_back(procTex.renderRect.height);
+  sys.destx.push_back(procTex.renderRect.x);
+  sys.desty.push_back(procTex.renderRect.y);
+  sys.filterMode.push_back(procTex.filterMode);
+  sys.glTextureId.push_back(procTex.glTextureId);
+  sys.width.push_back(procTex.width);
+  sys.height.push_back(procTex.height);
+  sys.height.push_back(procTex.height);
+  sys.isDirty.push_back(procTex.isDirty);
   return procTex;
 }
 
-sabre_ProcTextureObject
-sabre_CreateProcTextureObject(sabre_GlobalContext &gctx, uint32_t width,
-                              uint32_t height,
-                              sabre_TextureFilterMode filterMode) {
-  (void)gctx;
-  sabre_ProcTextureObject procTex;
-  initializeTextureObject(procTex, width, height, filterMode);
-  return procTex;
+// Deprecated
+// void setPixelColor(TextureRect &procTex, uint32_t xCoord, uint32_t yCoord,
+//                    uint8_t redVal, uint8_t greenVal, uint8_t blueVal,
+//                    uint8_t alphaVal) {
+//   if (xCoord >= procTex.width || yCoord >= procTex.height) {
+//     return;
+//   }
+
+//   const uint32_t packedColor = (static_cast<uint32_t>(alphaVal) << 24) |
+//                                (static_cast<uint32_t>(blueVal) << 16) |
+//                                (static_cast<uint32_t>(greenVal) << 8) |
+//                                static_cast<uint32_t>(redVal);
+
+//   procTex.textureBuffer[static_cast<size_t>(yCoord) * procTex.width + xCoord]
+//   =
+//       packedColor;
+//   procTex.isDirty = true;
+// }
+
+void setTextureBuffer(TextureRectSystem &sys, std::vector<uint32_t> buffer,
+                      uint32_t idx) {
+  // Checks if the buffer provided is the same size as the original buffer
+  if (buffer.size() == sys.buffers[idx].buffer.size()) {
+    sys.buffers[idx].buffer = buffer;
+    sys.isDirty[idx] = true;
+    uploadTextureBuffer(sys, idx);
+  } else { // throw error if not
+    std::cerr << "Buffer of incorrect size provided to setTextureBuffer. "
+                 "Original buffer size: "
+              << sys.buffers[idx].buffer.size()
+              << "B, provided buffer size: " << buffer.size() << std::endl;
+    return;
+  }
 }
 
-void setPixelColor(sabre_ProcTextureObject &procTex, uint32_t xCoord,
-                   uint32_t yCoord, uint8_t redVal, uint8_t greenVal,
-                   uint8_t blueVal, uint8_t alphaVal) {
-  if (xCoord >= procTex.width || yCoord >= procTex.height) {
+void uploadTextureBuffer(TextureRectSystem &sys, uint32_t id) {
+  if (!sys.isDirty[id] || sys.glTextureId[id] == 0 ||
+      sys.buffers[id].buffer.empty()) {
     return;
   }
 
-  const uint32_t packedColor = (static_cast<uint32_t>(alphaVal) << 24) |
-                               (static_cast<uint32_t>(blueVal) << 16) |
-                               (static_cast<uint32_t>(greenVal) << 8) |
-                               static_cast<uint32_t>(redVal);
-
-  procTex.textureBuffer[static_cast<size_t>(yCoord) * procTex.width + xCoord] =
-      packedColor;
-  procTex.isDirty = true;
-}
-
-void uploadTextureBuffer(sabre_ProcTextureObject &procTex) {
-  if (!procTex.isDirty || procTex.glTextureId == 0 ||
-      procTex.textureBuffer.empty()) {
-    return;
-  }
-
-  glBindTexture(GL_TEXTURE_2D, procTex.glTextureId);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, static_cast<GLsizei>(procTex.width),
-                  static_cast<GLsizei>(procTex.height), GL_RGBA,
-                  GL_UNSIGNED_BYTE, procTex.textureBuffer.data());
+  glBindTexture(GL_TEXTURE_2D, sys.glTextureId[id]);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, static_cast<GLsizei>(sys.width[id]),
+                  static_cast<GLsizei>(sys.height[id]), GL_RGBA,
+                  GL_UNSIGNED_BYTE, sys.buffers[id].buffer.data());
   glBindTexture(GL_TEXTURE_2D, 0);
-  procTex.isDirty = false;
+  sys.isDirty[id] = false;
 }
 
-void sabre_RenderProcTextureObject(const sabre_GlobalContext &gctx,
-                                   SDL_Window *window,
-                                   sabre_ProcTextureObject &procTex) {
-  if (!window || procTex.width == 0 || procTex.height == 0 ||
-      procTex.glTextureId == 0) {
+void RenderProcTextureObject(const GlobalContext &gctx, SDL_Window *window,
+                             TextureRectSystem &sys, uint32_t id) {
+  if (!window || sys.width[id] == 0 || sys.height[id] == 0 ||
+      sys.glTextureId[id] == 0) {
     return;
   }
 
@@ -231,20 +280,17 @@ void sabre_RenderProcTextureObject(const sabre_GlobalContext &gctx,
     return;
   }
 
-  uploadTextureBuffer(procTex);
+  uploadTextureBuffer(sys, id);
 
   const float screenWidth = static_cast<float>(pixelW);
   const float screenHeight = static_cast<float>(pixelH);
 
-  const float leftNdc = (procTex.renderRect.x / screenWidth) * 2.0f - 1.0f;
+  const float leftNdc = (sys.destx[id] / screenWidth) * 2.0f - 1.0f;
   const float rightNdc =
-      ((procTex.renderRect.x + procTex.renderRect.width) / screenWidth) * 2.0f -
-      1.0f;
-  const float topNdc = 1.0f - (procTex.renderRect.y / screenHeight) * 2.0f;
+      ((sys.destx[id] + sys.destwidth[id]) / screenWidth) * 2.0f - 1.0f;
+  const float topNdc = 1.0f - (sys.destheight[id] / screenHeight) * 2.0f;
   const float bottomNdc =
-      1.0f -
-      ((procTex.renderRect.y + procTex.renderRect.height) / screenHeight) *
-          2.0f;
+      1.0f - ((sys.desty[id] + sys.destheight[id]) / screenHeight) * 2.0f;
 
   const float vertices[6 * 4] = {
       leftNdc, topNdc, 0.0f,     0.0f,      rightNdc, topNdc,
@@ -261,7 +307,7 @@ void sabre_RenderProcTextureObject(const sabre_GlobalContext &gctx,
 
   glUseProgram(gQuadRenderer.shaderProgram);
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, procTex.glTextureId);
+  glBindTexture(GL_TEXTURE_2D, sys.glTextureId[id]);
   if (gQuadRenderer.textureUniformLoc >= 0) {
     glUniform1i(gQuadRenderer.textureUniformLoc, 0);
   }
@@ -291,7 +337,7 @@ void shutdownProcTextureRenderer() {
   gQuadRenderer.initialized = false;
 }
 
-void destroyProcTextureObject(sabre_ProcTextureObject &procTex) {
+void destroyProcTextureObject(TextureRect &procTex) {
   if (procTex.glTextureId != 0) {
     glDeleteTextures(1, &procTex.glTextureId);
     procTex.glTextureId = 0;
@@ -300,6 +346,15 @@ void destroyProcTextureObject(sabre_ProcTextureObject &procTex) {
   procTex.width = 0;
   procTex.height = 0;
   procTex.isDirty = false;
+}
+
+uint32_t getFreeTextureHandle(TextureRectSystem &sys) {
+  // holds free handle
+  uint32_t id = kInvalidHandle;
+
+  // get any free, reusable handles, before issuing a brand new one
+  if (!sys.freeHandles.empty()) {
+  }
 }
 
 } // namespace sabre::core

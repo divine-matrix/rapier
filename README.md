@@ -1,6 +1,6 @@
 Info: Project is called Sabre, not Rapier
 # Sabre
-Project devlogs are on [my youtube channel](youtube.com/@divinematrix4z).  
+Project devlogs are on [my youtube channel](https://www.youtube.com/@divinematrix4z).  
 
 ---
 Sabre is a custom game engine designed by me. This is my first project using OpenGL for rendering, and a data-oriented design architecture. It is currently in the beta design stage, where I currently only have basic rendering implemented, and am working on implementing other things.  
